@@ -216,6 +216,10 @@ order.forEach(k=>{if(!acc[k])return;let c=0;while(placed.some(q=>q.c===c&&Math.a
 return{acc,col,nc:placed.length?Math.max(...placed.map(q=>q.c))+1:0}})}
 function renderScore(div,{events,spec,showF,showK,fing={},fmt=FMT4}){
 if(!div||!events.length)return null;
+const lv=events.map(e=>{const mx=Math.max(...e.keys.map(k=>parseK(k).step));return mx>=49?1:0});
+const fillLv=L=>{const a=lv.findIndex(v=>v>=L),b=lv.length-1-[...lv].reverse().findIndex(v=>v>=L);if(a>=0)for(let i=a;i<=b;i++)lv[i]=Math.max(lv[i],L)};fillLv(1);
+if(lv.some(v=>v))events=events.map((e,i)=>lv[i]?{...e,keys:e.keys.map(k=>k.replace(/\/(\d+)$/,(m,o)=>'/'+(+o-lv[i])))}:e);
+const hyArr=[],rawX=[];
 const SC=.72,NW=26,NPM=fmt.npm,cw=Math.max(340,div.clientWidth||900),N=events.length,ys=s=>40-(s-30)*5;
 const hasK=!!(showK&&spec in KS),ksn=hasK?KS[spec]:0,kmap={};
 for(let i=0;i<Math.abs(ksn);i++)kmap[(ksn>0?'FCGDAEB':'BEADGCF')[i]]=ksn>0?1:-1;
@@ -244,23 +248,26 @@ items.forEach(it=>{it.dir=it.avg>=34?'d':'u'});
 groups.forEach(gr=>{const up=gr.reduce((a,b)=>a+b.avg,0)/gr.length<34;gr.forEach(it=>{it.dir=up?'u':'d'});
 const xs=gr.map(it=>it.cx+(up?5.9:-5.9)),xf=xs[0],xl=xs[xs.length-1],ref=gr.map(it=>up?it.top:it.bot);
 const sl=Math.max(-.25,Math.min(.25,(ref[ref.length-1]-ref[0])/(xl-xf)*.4));
-const b=up?Math.min(...ref.map((r,i)=>r-28-sl*(xs[i]-xf))):Math.max(...ref.map((r,i)=>r+28-sl*(xs[i]-xf)));
+const b=up?Math.min(...ref.map((r,i)=>Math.min(r-28,20)-sl*(xs[i]-xf))):Math.max(...ref.map((r,i)=>Math.max(r+28,20)-sl*(xs[i]-xf)));
 gr.forEach((it,i)=>{it.sx=xs[i];it.tip=b+sl*(xs[i]-xf);it.beamed=true});
 (fmt.nb===1?[0]:[0,7]).forEach(o=>{const y1=b+(up?o:-o-4.5),y2=y1+sl*(xl-xf);beamSvg+=`<path d="M${xf} ${y1}L${xl} ${y2}V${y2+4.5}L${xf} ${y1+4.5}Z" fill="currentColor" stroke="none"/>`;ext(y1,y2+4.5)});
-if(fmt.trip){const cxm=(xf+xl)/2,by=b+sl*(cxm-xf),y3=up?by-5:by+15;beamSvg+=`<text x="${cxm}" y="${y3}" text-anchor="middle" font-family="Times New Roman,Times,serif" font-style="italic" font-weight="700" font-size="15" fill="currentColor" stroke="none">3</text>`;ext(y3-12,y3+3)}
+if(fmt.trip){const cxm=(xf+xl)/2,by=b+sl*(cxm-xf),y3=up?by-5:Math.min(...gr.map(q=>q.top))-10;beamSvg+=`<text x="${cxm}" y="${y3}" text-anchor="middle" font-family="Times New Roman,Times,serif" font-style="italic" font-weight="700" font-size="15" fill="currentColor" stroke="none">3</text>`;ext(y3-12,y3+3)}
 gr.forEach(it=>{it.trip=fmt.trip})});
-items.forEach(it=>{const up=it.dir==='u',sx=it.beamed?it.sx:it.cx+(up?5.9:-5.9),tip=it.beamed?it.tip:(up?it.top-35:it.bot+35);let s='',led='';
+items.forEach(it=>{const up=it.dir==='u',sx=it.beamed?it.sx:it.cx+(up?5.9:-5.9),tip=it.beamed?it.tip:(up?Math.min(it.top-35,20):Math.max(it.bot+35,20));let s='',led='';
 it.P.forEach(p=>{if(p.step<=28)for(let st=28;st>=p.step;st-=2)led+=`M${it.cx-10} ${ys(st)}H${it.cx+10}`;else if(p.step>=40)for(let st=40;st<=p.step;st+=2)led+=`M${it.cx-10} ${ys(st)}H${it.cx+10}`});
 if(led)s+=`<path d="${led}" stroke-width="1.3"/>`;
 it.yv.forEach(y=>{s+=it.half?`<ellipse cx="${it.cx}" cy="${y}" rx="6.2" ry="4.4" transform="rotate(-20 ${it.cx} ${y})" fill="#fff" stroke-width="1.7"/>`:`<ellipse cx="${it.cx}" cy="${y}" rx="6.4" ry="4.7" transform="rotate(-20 ${it.cx} ${y})" fill="currentColor" stroke="none"/>`});
 if(it.fin&&it.fin[2])it.yv.forEach((y,k)=>{const dy=it.P[k].step%2===0?y-5:y;for(let d=0;d<it.fin[2];d++)s+=`<circle cx="${it.cx+11+d*5}" cy="${dy}" r="1.7" fill="currentColor" stroke="none"/>`});
 if(!(it.fin&&it.fin[1]==='w'))s+=`<path d="M${sx} ${up?it.bot:it.top}V${tip}" stroke-width="1.3"/>`;
 it.acc.forEach((a,k)=>{if(a)s+=glyph(a,it.cx-15.5-it.col[k]*10.5,it.yv[k])});
-body+=`<g id="n${it.gi}">${s}</g>`;ext(tip,it.top-6,it.bot+6);
-if(showF){const fo=normN(fing[it.gi]),ks=Object.keys(fo).map(Number).sort((a,b)=>a-b).filter(k=>fo[k]!==undefined&&fo[k]!==''),fy=Math.min((up?tip:it.top-6)-6-(it.trip&&up?16:0),-10);
-ks.forEach((k,i)=>{const y=fy-i*16;body+=`<text x="${it.cx}" y="${y}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="14" fill="#000" stroke="none">${fo[k]}</text>`;ext(y-14)})}
-pos.push({gi:it.gi,x:it.cx*SC,nk:it.P.length,ya:(it.yv[0]+it.yv[it.yv.length-1])/2})});
+body+=`<g id="n${it.gi}">${s}</g>`;ext(tip,it.top-6,it.bot+6);it.hy=Math.min(it.top-8,up?tip:1e9);
+if(showF){const fo=normN(fing[it.gi]),ks=Object.keys(fo).map(Number).sort((a,b)=>a-b).filter(k=>fo[k]!==undefined&&fo[k]!==''),fy=Math.min((up?tip:it.top-6)-6-(it.trip?16:0),-10);
+if(ks.length)it.hy=Math.min(it.hy,fy-(ks.length-1)*16-12);ks.forEach((k,i)=>{const y=fy-i*16;body+=`<text x="${it.cx}" y="${y}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="14" fill="#000" stroke="none">${fo[k]}</text>`;ext(y-14)})}
+pos.push({gi:it.gi,x:it.cx*SC,nk:it.P.length,ya:(it.yv[0]+it.yv[it.yv.length-1])/2});hyArr[it.gi]=it.hy;rawX[it.gi]=it.cx});
 x0+=w});
+{let a=0;while(a<lv.length){if(!lv[a]){a++;continue}let b=a;while(b+1<lv.length&&lv[b+1]===lv[a])b++;
+const lab=lv[a]===2?'15ma':'8va',xa=rawX[a]-9,lw0=lab==='15ma'?34:29,xb=Math.max(rawX[b]+9,xa+lw0+6),yb=Math.min(-14,Math.min(...hyArr.slice(a,b+1))-6);
+body+=`<text x="${xa}" y="${yb+5}" font-family="Times New Roman,Times,serif" font-style="italic" font-weight="700" font-size="15" fill="currentColor" stroke="none">${lab}</text><path d="M${xa+lw0} ${yb}H${xb}V${yb+8}" stroke-width="1.1" stroke-dasharray="4 3"/>`;ext(yb-12,yb+8);a=b+1}}
 const vy=Math.min(minY,-12)-6,vh=Math.max(maxY,46)+8-vy,dw=Math.ceil(lw*SC),dh=Math.ceil(vh*SC);
 div.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" width="${dw}" height="${dh}" viewBox="0 ${vy} ${lw} ${vh}" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" style="display:block;color:#000"><path d="${lines}" stroke-width="1"/>${body}${beamSvg}</svg>`;
 pos.forEach(p=>{p.sy=p.nk>=2?(p.ya-vy)*SC:null});
