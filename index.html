@@ -89,6 +89,9 @@ input[type=range]{width:100%;accent-color:var(--acc);margin:0}
 .pg{max-width:36rem;margin:0 auto}.pg.wide{max-width:60rem}.ctr{text-align:center}
 .pg h2{font:700 28px var(--sans);letter-spacing:-.03em;margin:0}.mut{color:var(--mut);font-size:14px;margin:4px 0 0}
 .tcard{padding:28px;margin-top:22px}
+.refrow{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
+.rb.rec{background:#dc2626;color:#fff}
+.take{background:var(--chip);border-radius:12px;padding:10px;margin-top:8px}.take audio{width:100%;height:36px;margin-top:6px}.take .tr{display:flex;justify-content:space-between;gap:8px;margin-top:6px;font-size:13px;font-weight:600}.take .tr button:last-child{color:var(--mut);font-weight:500}
 .gz{position:relative;height:160px;overflow:hidden}
 .gl{position:absolute;bottom:0;width:100%;display:flex;justify-content:space-between;padding:0 24px;font:11px var(--mono);color:var(--mut)}
 #nd{position:absolute;bottom:8px;left:calc(50% - 2px);width:4px;height:128px;border-radius:2px;background:#a8a29e;transform-origin:bottom center;transition:transform .12s ease-out}
@@ -135,11 +138,14 @@ input[type=range]{width:100%;accent-color:var(--acc);margin:0}
 <div class="card paper print-area"><div class="printonly"><h2 id="ptitle"></h2></div><p class="hint noprint" id="hint" data-i="fingeringHint"></p><div class="sc"><div id="score"></div><div id="ov"></div></div></div>
 </section>
 <aside class="a3 noprint"><div class="card studio stk">
-<div><div class="bpmr"><span class="lab2" data-i="tempo"></span><span class="bpmv"><span id="bv">72</span> <small data-i="bpm"></small></span></div><input type="range" id="bpm" min="40" max="208" value="72"></div>
+<div><div class="bpmr"><span class="lab2" data-i="tempo"></span><span class="bpmv"><span id="bv">72</span> <small data-i="bpm"></small></span></div><input type="range" id="bpm" min="20" max="208" value="72"></div>
 <button class="b p" id="play"></button>
+<label class="sw"><input type="checkbox" id="lp"><span data-i="loop"></span></label>
+<div class="beats"><span data-i="refPitch"></span><span id="rpb" style="display:flex;gap:6px"></span></div>
 <div class="rbs"><button class="rb" id="prt"><i data-ic="print"></i><span data-i="print"></span></button><button class="rb" id="pdf"><i data-ic="dl"></i><span data-i="exportPdf"></span></button><button class="rb" id="car"><i data-ic="book"></i><span data-i="carnetPdf"></span></button></div>
 <p class="refn"><i data-ic="music" data-s="12"></i><span data-i="referencePlayback"></span></p>
 <div class="sep"><div class="bpmr"><span class="lab2" data-i="metronome"></span><input type="checkbox" class="sx" id="met"></div><div class="bars" id="bars"></div><div class="beats"><span data-i="beats"></span><span id="bts" style="display:flex;gap:6px"></span></div></div>
+<div class="sep"><div class="bpmr"><span class="lab2" data-i="recTitle"></span><span class="tm" id="rect" style="font-size:16px"></span></div><button class="rb" id="recbtn"></button><div id="takes"></div><p class="refn" style="margin-top:10px" data-i="recNote"></p></div>
 <div class="sep"><div class="bpmr" style="margin:0"><div style="display:flex;align-items:center;gap:8px"><i data-ic="timer" data-s="18"></i><span class="tm" id="tm">00:00</span></div><button id="ses" class="sesb"></button></div></div>
 </div></aside>
 </div></section>
@@ -150,8 +156,8 @@ input[type=range]{width:100%;accent-color:var(--acc);margin:0}
 <div id="dlg" hidden></div><div id="toast"></div>
 <script>
 const $=i=>document.getElementById(i),Q=s=>document.querySelector(s),QA=s=>document.querySelectorAll(s);
-const TR={fr:{appName:'Violin Scale Lab',tagline:"Gammes, arpèges & doubles cordes pour violonistes — partitions, métronome, accordeur et suivi.",tab_library:'Gammes',tab_tuner:'Accordeur',tab_dashboard:'Mon suivi',tonic:'Tonique',type:'Type',octaves:'Octaves',fingerings:'Doigtés',keySignature:'Armure',fingeringHint:'Cliquez sur une note pour écrire le doigté (0→1→2→3→4→effacer).',play:'Écouter',stop:'Arrêter',print:'Imprimer',exportPdf:'Exporter en PDF',carnetPdf:'Carnet PDF',tempo:'Tempo',bpm:'BPM',metronome:'Métronome',referencePlayback:'Lecture de référence (son de piano)',startSession:'Démarrer la session',stopSession:'Terminer',sessionSaved:'Session enregistrée',minutesLogged:'min enregistrées',tunerTitle:'Accordeur chromatique',tunerSub:"Autorisez le micro et jouez une note tenue.",tunerStart:'Activer le micro',tunerStop:'Arrêter le micro',listening:'À l’écoute…',inTune:'Juste',tooFlat:'Trop bas',tooSharp:'Trop haut',strings:'Cordes à vide',dashTitle:'Tableau de bord',todayMinutes:"Minutes aujourd’hui",streak:'Série',days:'jours',weekOverview:'Les 7 derniers jours',byScale:'Par gamme',noData:"Aucune donnée pour l'instant. Lancez une session de travail !",totalMinutes:'Total',reset:'Réinitialiser',min:'min',micDenied:"Accès micro refusé. Vérifiez les autorisations du navigateur.",beats:'Temps',carnetTitle:'Carnet de gammes PDF',carnetDesc:'Composez un recueil de gammes à imprimer en un seul PDF.',addCurrent:'Ajouter la gamme actuelle',carnetOctaves:'Octaves des préréglages',presetMajors:'Toutes les majeures',presetHarmonic:'Toutes les mineures harmoniques',presetMelodic:'Toutes les mineures mélodiques',carnetEmpty:'Aucune gamme ajoutée pour le moment.',clearList:'Vider',generatePdf:'Générer le PDF',generating:'Génération…',scalesCount:'gammes'},
-en:{appName:'Violin Scale Lab',tagline:'Scales, arpeggios & double stops for violinists — sheet music, metronome, tuner and tracking.',tab_library:'Scales',tab_tuner:'Tuner',tab_dashboard:'My tracking',tonic:'Tonic',type:'Type',octaves:'Octaves',fingerings:'Fingerings',keySignature:'Key signature',fingeringHint:'Click a note to set its fingering (0→1→2→3→4→clear).',play:'Play',stop:'Stop',print:'Print',exportPdf:'Export as PDF',carnetPdf:'PDF Notebook',tempo:'Tempo',bpm:'BPM',metronome:'Metronome',referencePlayback:'Reference playback (piano sound)',startSession:'Start session',stopSession:'Finish',sessionSaved:'Session saved',minutesLogged:'min logged',tunerTitle:'Chromatic tuner',tunerSub:'Allow the mic and play a sustained note.',tunerStart:'Enable mic',tunerStop:'Stop mic',listening:'Listening…',inTune:'In tune',tooFlat:'Too flat',tooSharp:'Too sharp',strings:'Open strings',dashTitle:'Dashboard',todayMinutes:'Minutes today',streak:'Streak',days:'days',weekOverview:'Last 7 days',byScale:'By scale',noData:'No data yet. Start a practice session!',totalMinutes:'Total',reset:'Reset',min:'min',micDenied:'Microphone access denied. Check your browser permissions.',beats:'Beats',carnetTitle:'PDF Scale Notebook',carnetDesc:'Build a printable collection of scales as a single PDF.',addCurrent:'Add current scale',carnetOctaves:'Preset octaves',presetMajors:'All majors',presetHarmonic:'All harmonic minors',presetMelodic:'All melodic minors',carnetEmpty:'No scales added yet.',clearList:'Clear',generatePdf:'Generate PDF',generating:'Generating…',scalesCount:'scales'}};
+const TR={fr:{appName:'Violin Scale Lab',tagline:"Gammes, arpèges & doubles cordes pour violonistes — partitions, métronome, accordeur et suivi.",tab_library:'Gammes',tab_tuner:'Accordeur',tab_dashboard:'Mon suivi',tonic:'Tonique',type:'Type',octaves:'Octaves',fingerings:'Doigtés',keySignature:'Armure',fingeringHint:'Cliquez sur une note pour écrire le doigté (0→1→2→3→4→effacer).',play:'Écouter',stop:'Arrêter',print:'Imprimer',exportPdf:'Exporter en PDF',carnetPdf:'Carnet PDF',tempo:'Tempo',bpm:'BPM',metronome:'Métronome',referencePlayback:'Lecture de référence (son de piano)',startSession:'Démarrer la session',stopSession:'Terminer',sessionSaved:'Session enregistrée',minutesLogged:'min enregistrées',tunerTitle:'Accordeur chromatique',tunerSub:"Autorisez le micro et jouez une note tenue.",tunerStart:'Activer le micro',tunerStop:'Arrêter le micro',listening:'À l’écoute…',loop:'Boucle',refPitch:'Diapason',recTitle:'Enregistrement',recStart:'Enregistrer',recStop:'Arrêter',recSave:'Télécharger',recDelete:'Supprimer',recNote:'Les enregistrements restent sur cet appareil et disparaissent à la fermeture de la page : téléchargez ceux que vous voulez garder.',inTune:'Juste',tooFlat:'Trop bas',tooSharp:'Trop haut',strings:'Cordes à vide',dashTitle:'Tableau de bord',todayMinutes:"Minutes aujourd’hui",streak:'Série',days:'jours',weekOverview:'Les 7 derniers jours',byScale:'Par gamme',noData:"Aucune donnée pour l'instant. Lancez une session de travail !",totalMinutes:'Total',reset:'Réinitialiser',min:'min',micDenied:"Accès micro refusé. Vérifiez les autorisations du navigateur.",beats:'Temps',carnetTitle:'Carnet de gammes PDF',carnetDesc:'Composez un recueil de gammes à imprimer en un seul PDF.',addCurrent:'Ajouter la gamme actuelle',carnetOctaves:'Octaves des préréglages',presetMajors:'Toutes les majeures',presetHarmonic:'Toutes les mineures harmoniques',presetMelodic:'Toutes les mineures mélodiques',carnetEmpty:'Aucune gamme ajoutée pour le moment.',clearList:'Vider',generatePdf:'Générer le PDF',generating:'Génération…',scalesCount:'gammes'},
+en:{appName:'Violin Scale Lab',tagline:'Scales, arpeggios & double stops for violinists — sheet music, metronome, tuner and tracking.',tab_library:'Scales',tab_tuner:'Tuner',tab_dashboard:'My tracking',tonic:'Tonic',type:'Type',octaves:'Octaves',fingerings:'Fingerings',keySignature:'Key signature',fingeringHint:'Click a note to set its fingering (0→1→2→3→4→clear).',play:'Play',stop:'Stop',print:'Print',exportPdf:'Export as PDF',carnetPdf:'PDF Notebook',tempo:'Tempo',bpm:'BPM',metronome:'Metronome',referencePlayback:'Reference playback (piano sound)',startSession:'Start session',stopSession:'Finish',sessionSaved:'Session saved',minutesLogged:'min logged',tunerTitle:'Chromatic tuner',tunerSub:'Allow the mic and play a sustained note.',tunerStart:'Enable mic',tunerStop:'Stop mic',listening:'Listening…',loop:'Loop',refPitch:'Reference pitch',recTitle:'Recording',recStart:'Record',recStop:'Stop',recSave:'Download',recDelete:'Delete',recNote:'Recordings stay on this device and disappear when you close the page: download the ones you want to keep.',inTune:'In tune',tooFlat:'Too flat',tooSharp:'Too sharp',strings:'Open strings',dashTitle:'Dashboard',todayMinutes:'Minutes today',streak:'Streak',days:'days',weekOverview:'Last 7 days',byScale:'By scale',noData:'No data yet. Start a practice session!',totalMinutes:'Total',reset:'Reset',min:'min',micDenied:'Microphone access denied. Check your browser permissions.',beats:'Beats',carnetTitle:'PDF Scale Notebook',carnetDesc:'Build a printable collection of scales as a single PDF.',addCurrent:'Add current scale',carnetOctaves:'Preset octaves',presetMajors:'All majors',presetHarmonic:'All harmonic minors',presetMelodic:'All melodic minors',carnetEmpty:'No scales added yet.',clearList:'Clear',generatePdf:'Generate PDF',generating:'Generating…',scalesCount:'scales'}};
 let lang='fr';try{lang=localStorage.getItem('bdg_lang')||'fr'}catch(e){}
 const t=k=>TR[lang][k]||k;
 const IC={clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',rotate:'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',music4:'<path d="M9 18V5l12-2v13"/><path d="m9 9 12-2"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',gauge:'<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',music:'<circle cx="8" cy="18" r="4"/><path d="M12 18V2l7 4"/>',mic:'<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/>',chart:'<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>',flame:'<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',play:'<path d="M6 3l14 9-14 9z"/>',stop:'<rect x="5" y="5" width="14" height="14" rx="2"/>',print:'<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3h12v6"/><rect x="6" y="14" width="12" height="8" rx="1"/>',dl:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',book:'<path d="M12 13V7"/><path d="m9 10 3 3 3-3"/><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19v20H6.5a2.5 2.5 0 0 1 0-5H19"/>',timer:'<path d="M10 2h4"/><path d="m12 14 3-3"/><circle cx="12" cy="14" r="8"/>',plus:'<path d="M5 12h14"/><path d="M12 5v14"/>',x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',trash:'<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>'};
@@ -274,7 +280,7 @@ pos.forEach(p=>{p.sy=p.nk>=2?(p.ya-vy)*SC:null});
 return{svg:div.querySelector('svg'),pos,width:dw,height:dh}}
 
 // ===== State & drawing =====
-const S={tab:'library',tn:'G',ty:'major',oct:2,fg:true,ky:false,bpm:72,step:-1};
+const S={tab:'library',tn:'G',ty:'major',oct:2,fg:true,ky:false,bpm:72,step:-1,loop:false,ref:(()=>{try{return +localStorage.getItem('bdg_ref')||440}catch(e){return 440}})()};
 const tonic=()=>TONICS.find(x=>x.name===S.tn),type=()=>TYPES.find(x=>x.key===S.ty),sid=()=>`${S.tn}-${S.ty}-${S.oct}`;
 const ttl=(tn,ty,o)=>`${tl(tn)} — ${ty[lang]} · ${o} ${t('octaves')}`;
 let R=null,EV=[],FG={};
@@ -297,7 +303,7 @@ let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(S.t
 // ===== Audio =====
 let AC,master=null,tms=[],playing=false,metI=null,beatsN=4,bc=0;
 const ac=()=>AC||(AC=new(window.AudioContext||window.webkitAudioContext)());
-function ntSynth(m,t0,d,v,dest){const a=ac(),f=440*2**((m-69)/12),out=a.createGain(),lp=a.createBiquadFilter();
+function ntSynth(m,t0,d,v,dest){const a=ac(),f=S.ref*2**((m-69)/12),out=a.createGain(),lp=a.createBiquadFilter();
 lp.type='lowpass';lp.frequency.value=Math.min(9000,f*7+1200);lp.connect(out);out.connect(dest);
 const rel=Math.max(d,.6);out.gain.setValueAtTime(0,t0);out.gain.linearRampToValueAtTime(v,t0+.004);out.gain.setTargetAtTime(0,t0+rel*.85,.1);
 const low=1.3-Math.min(1,f/1500)*.6;
@@ -313,15 +319,16 @@ async function loadPiano(){try{toast(lang==='fr'?'Chargement du piano…':'Loadi
 PIANO=await Promise.all(PNAMES.map(async n=>{const r=await fetch(SAL+n+'.mp3');if(!r.ok)throw new Error(n);const b=await r.arrayBuffer(),buf=await new Promise((ok,no)=>ac().decodeAudioData(b,ok,no)),m=n.match(/^([A-Za-z]+)(\d)$/);return{midi:12*(+m[2]+1)+PPC[m[1]],buf}}))}
 catch(e){PIANO=[];toast(lang==='fr'?'Piano indisponible : son synthétique':'Piano unavailable: synth sound')}}
 function ntPiano(m,t0,d,v,dest){const a=ac(),s=PIANO.reduce((b,x)=>Math.abs(x.midi-m)<Math.abs(b.midi-m)?x:b),src=a.createBufferSource(),g=a.createGain();
-src.buffer=s.buf;src.playbackRate.value=2**((m-s.midi)/12);g.gain.setValueAtTime(v*1.6,t0);g.gain.setTargetAtTime(0,t0+d,.18);src.connect(g).connect(dest);src.start(t0);src.stop(t0+d+1.5)}
+src.buffer=s.buf;src.playbackRate.value=2**((m-s.midi)/12)*S.ref/440;g.gain.setValueAtTime(v*1.6,t0);g.gain.setTargetAtTime(0,t0+d,.18);src.connect(g).connect(dest);src.start(t0);src.stop(t0+d+1.5)}
 function nt(m,t0,d,v,dest){(PIANO&&PIANO.length?ntPiano:ntSynth)(m,t0,d,v,dest)}
 function hl(i){if(S.step>=0){const o=$('n'+S.step);if(o)o.style.color=''}S.step=i;if(i>=0){const o=$('n'+i);if(o)o.style.color='#D97706'}}
 function setPlayBtn(){$('play').innerHTML=ic(playing?'stop':'play')+' '+t(playing?'stop':'play')}
 function stopPlay(){playing=false;tms.forEach(clearTimeout);tms=[];if(master){master.disconnect();master=null}hl(-1);setPlayBtn()}
 $('play').onclick=async()=>{if(playing)return stopPlay();if(!EV.length)return;const a=ac();a.resume();if(PIANO===null){if(loadingP)return;loadingP=true;await loadPiano();loadingP=false}if(playing)return;master=a.createGain();master.connect(a.destination);playing=true;setPlayBtn();
-const step=60/S.bpm,t0=a.currentTime+.08;
-EV.forEach((e,i)=>{e.midis.forEach(m=>nt(m,t0+i*step,Math.max(.9,step*1.5),.24/e.midis.length,master));tms.push(setTimeout(()=>hl(i),(i*step+.08)*1000))});
-tms.push(setTimeout(stopPlay,(EV.length*step+.4)*1000))};
+const run=t0=>{const step=60/S.bpm,end=t0+EV.length*step,next=end+Math.max(.5,step*.6);
+EV.forEach((e,i)=>{e.midis.forEach(m=>nt(m,t0+i*step,Math.max(.9,step*1.5),.24/e.midis.length,master));tms.push(setTimeout(()=>hl(i),Math.max(0,(t0+i*step-a.currentTime)*1000)))});
+tms.push(setTimeout(()=>{if(!playing)return;if(S.loop)run(next);else stopPlay()},Math.max(0,(end+.4-a.currentTime)*1000)))};
+run(a.currentTime+.08)};
 function click(acc){const a=ac(),t0=a.currentTime,o=a.createOscillator(),g=a.createGain();o.frequency.setValueAtTime(acc?392:262,t0);o.frequency.exponentialRampToValueAtTime(acc?130:98,t0+.06);g.gain.setValueAtTime(acc?.7:.45,t0);g.gain.exponentialRampToValueAtTime(.001,t0+.18);o.connect(g).connect(a.destination);o.start(t0);o.stop(t0+.2)}
 function paintBeats(b){$('bars').innerHTML=Array.from({length:beatsN},(_,i)=>`<i class="${b===i?'on'+(i===0?' a':''):''}"></i>`).join('')}
 function metStop(){clearInterval(metI);metI=null;paintBeats(-1)}
@@ -330,6 +337,10 @@ $('met').onchange=()=>$('met').checked?metStart():metStop();
 $('bpm').oninput=()=>{S.bpm=+$('bpm').value;$('bv').textContent=S.bpm;if(metI)metStart()};
 function beatsBtns(){$('bts').innerHTML=[2,3,4,6].map(b=>`<button class="bt${b===beatsN?' on':''}" data-b="${b}">${b}</button>`).join('')}
 $('bts').onclick=e=>{const b=e.target.closest('button');if(!b)return;beatsN=+b.dataset.b;beatsBtns();if(metI)metStart();else paintBeats(-1)};
+$('lp').onchange=()=>{S.loop=$('lp').checked};
+function setRef(r){S.ref=r;try{localStorage.setItem('bdg_ref',r)}catch(e){}QA('[data-r]').forEach(x=>x.classList.toggle('on',+x.dataset.r===r))}
+$('rpb').innerHTML=[440,442].map(r=>`<button class="bt${r===S.ref?' on':''}" data-r="${r}">A = ${r}</button>`).join('');
+$('rpb').onclick=e=>{const b=e.target.closest('button');if(b)setRef(+b.dataset.r)};
 $('prt').onclick=()=>{try{print()}catch(e){}toast(lang==='fr'?'Si rien ne s’ouvre, utilisez « Exporter en PDF » puis imprimez le fichier.':'If nothing opens, use “Export as PDF” and print the file.')};
 
 // ===== Practice store, session timer =====
@@ -348,7 +359,7 @@ const NN=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];let tu=null;
 function detect(b,sr){let r=0;for(const v of b)r+=v*v;if(Math.sqrt(r/b.length)<.01)return 0;
 const n=b.length>>1,mn=Math.floor(sr/1000),mx=Math.floor(sr/180),c=[];for(let l=mn;l<=mx;l++){let s=0;for(let i=0;i<n;i++)s+=b[i]*b[i+l];c[l]=s}
 let d=mn;while(d<mx-1&&c[d]>c[d+1])d++;let bl=d;for(let l=d;l<=mx;l++)if(c[l]>c[bl])bl=l;return sr/bl}
-function f2n(f){const n=12*Math.log2(f/440)+69,r=Math.round(n);return{name:NN[((r%12)+12)%12],octave:Math.floor(r/12)-1,cents:Math.round((n-r)*100),freq:f}}
+function f2n(f){const n=12*Math.log2(f/S.ref)+69,r=Math.round(n);return{name:NN[((r%12)+12)%12],octave:Math.floor(r/12)-1,cents:Math.round((n-r)*100),freq:f}}
 function tbLabel(){const b=$('tb');if(!b)return;b.innerHTML=ic(tu?'x':'mic')+' '+t(tu?'tunerStop':'tunerStart');b.classList.toggle('on',!!tu)}
 function showP(p){const nd=$('nd');if(!nd)return;const c=p?p.cents:0,ok=p&&Math.abs(c)<=5,col=!p?'#a8a29e':ok?'#16A34A':c<0?'#3B82F6':'#EF4444';
 nd.style.transform=`rotate(${Math.max(-45,Math.min(45,c*.9))}deg)`;nd.style.background=col;
@@ -361,8 +372,8 @@ navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppress
 const loop=()=>{an.getFloatTimeDomainData(buf);const f=detect(buf,a.sampleRate);showP(f>0&&f<3000?f2n(f):null);raf=requestAnimationFrame(loop)};
 tu=()=>{cancelAnimationFrame(raf);st.getTracks().forEach(x=>x.stop());a.close()};tbLabel();loop()}).catch(()=>alert(t('micDenied')))}
 function tunerView(){if(tu){tu();tu=null}
-$('v-tun').innerHTML=`<div class="pg"><div class="ctr"><h2>${t('tunerTitle')}</h2><p class="mut">${t('tunerSub')}</p></div><div class="card tcard"><div class="gz"><div class="gl"><span>-50</span><span>0</span><span>+50</span></div><div id="nd"></div><div class="pivot"></div></div><div class="ctr"><div id="tn" class="tnote">—</div><div id="ts" class="tst"></div></div><button id="tb" class="tbtn"></button><div class="strs"><p class="lab2 ctr">${t('strings')}</p><div class="g4">${[['G',3],['D',4],['A',4],['E',5]].map(([n,o])=>`<div class="st" data-n="${n}" data-o="${o}"><b>${n}</b><small>${n}${o}</small></div>`).join('')}</div></div></div></div>`;
-$('tb').onclick=tuToggle;tbLabel()}
+$('v-tun').innerHTML=`<div class="pg"><div class="ctr"><h2>${t('tunerTitle')}</h2><p class="mut">${t('tunerSub')}</p></div><div class="card tcard"><div class="refrow"><span class="lab2" style="margin:0">${t('refPitch')}</span><span style="display:flex;gap:6px">${[440,442].map(r=>`<button class="bt${r===S.ref?' on':''}" data-r="${r}">A = ${r}</button>`).join('')}</span></div><div class="gz"><div class="gl"><span>-50</span><span>0</span><span>+50</span></div><div id="nd"></div><div class="pivot"></div></div><div class="ctr"><div id="tn" class="tnote">—</div><div id="ts" class="tst"></div></div><button id="tb" class="tbtn"></button><div class="strs"><p class="lab2 ctr">${t('strings')}</p><div class="g4">${[['G',3],['D',4],['A',4],['E',5]].map(([n,o])=>`<div class="st" data-n="${n}" data-o="${o}"><b>${n}</b><small>${n}${o}</small></div>`).join('')}</div></div></div></div>`;
+$('tb').onclick=tuToggle;tbLabel();QA('#v-tun [data-r]').forEach(b=>b.onclick=()=>setRef(+b.dataset.r))}
 
 // ===== Dashboard (port of PracticeDashboard.js) =====
 function dashView(){const d=ld(),td=tk(),loc=lang==='fr'?'fr-FR':'en-US',week=[];
@@ -430,6 +441,27 @@ pg.texts.push({x:m,y,size:14,font:'F1',txt:pdfTxt(ttl(tn,ty,it.o))});y+=10;pg.im
 finally{document.body.removeChild(host)}
 await savePdf(makePdf(pages,W,H),(lang==='fr'?'carnet-gammes':'scale-notebook')+'.pdf')}
 
+// ===== Recording (microphone -> audio file, kept on the device) =====
+let recM=null,recT=null,recSec=0,takes=[];
+const recMime=()=>['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'].find(m=>window.MediaRecorder&&MediaRecorder.isTypeSupported(m))||'';
+async function saveBlob(blob,name){let dl=null;try{dl=typeof claude!=='undefined'?await claude.use('downloads'):null}catch(e){}
+if(dl){try{await dl.save({filename:name,data:blob});return}catch(e){}}
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove()}
+function recBtn(){const b=$('recbtn');if(!b)return;b.innerHTML=ic(recM?'stop':'mic')+' '+t(recM?'recStop':'recStart');b.classList.toggle('rec',!!recM)}
+function renderTakes(){const c=$('takes');if(!c)return;
+c.innerHTML=takes.map((k,i)=>`<div class="take"><div style="font-size:13px;font-weight:600">${k.title} · ${fmt(k.secs)}</div><audio controls preload="metadata" src="${k.url}"></audio><div class="tr"><button data-a="dl" data-i="${i}">${t('recSave')}</button><button data-a="del" data-i="${i}">${t('recDelete')}</button></div></div>`).join('')}
+async function recToggle(){if(recM){recM.stop();return}
+try{const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}}),mt=recMime(),m=new MediaRecorder(st,mt?{mimeType:mt}:undefined),ch=[],title=ttl(tonic(),type(),S.oct);
+m.ondataavailable=e=>{if(e.data&&e.data.size)ch.push(e.data)};
+m.onstop=()=>{clearInterval(recT);recT=null;st.getTracks().forEach(x=>x.stop());const mime=m.mimeType||mt||'audio/webm',blob=new Blob(ch,{type:mime}),ext=mime.includes('mp4')?'m4a':mime.includes('ogg')?'ogg':'webm';
+takes.unshift({url:URL.createObjectURL(blob),blob,ext,title,secs:recSec});recM=null;recSec=0;$('rect').textContent='';recBtn();renderTakes()};
+recSec=0;$('rect').textContent='00:00';recT=setInterval(()=>{recSec++;$('rect').textContent=fmt(recSec)},1000);m.start();recM=m;recBtn()}
+catch(e){alert(t('micDenied'))}}
+$('recbtn').onclick=recToggle;
+$('takes').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;const i=+b.dataset.i,k=takes[i];if(!k)return;
+if(b.dataset.a==='del'){URL.revokeObjectURL(k.url);takes.splice(i,1);renderTakes()}
+else saveBlob(k.blob,'enregistrement-'+new Date().toISOString().slice(0,16).replace(/[:T]/g,'-')+'.'+k.ext)};
+
 // ===== Tabs, language, init =====
 const TABS=[['library','tab_library','music'],['tuner','tab_tuner','mic'],['dashboard','tab_dashboard','chart']];
 function tabs(){$('dnav').innerHTML=TABS.map(([id,k,i])=>`<button data-tab="${id}" class="${S.tab===id?'on':''}">${ic(i)} ${t(k)}</button>`).join('');
@@ -439,7 +471,7 @@ $('v-lib').hidden=id!=='library';$('v-tun').hidden=id!=='tuner';$('v-dash').hidd
 if(id==='tuner')tunerView();if(id==='dashboard')dashView();if(id==='library')draw();tabs();scrollTo(0,0)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)goTab(b.dataset.tab)});
 function applyLang(){document.documentElement.lang=lang;QA('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));
-QA('#lg button').forEach(b=>b.classList.toggle('on',b.dataset.l===lang));tabs();filters();setPlayBtn();sesBtn();beatsBtns();
+QA('#lg button').forEach(b=>b.classList.toggle('on',b.dataset.l===lang));tabs();filters();setPlayBtn();sesBtn();beatsBtns();recBtn();renderTakes();
 if(S.tab==='tuner')tunerView();if(S.tab==='dashboard')dashView();if(!$('dlg').hidden)dlg();draw()}
 $('lg').onclick=e=>{const b=e.target.closest('button');if(!b)return;lang=b.dataset.l;try{localStorage.setItem('bdg_lang',lang)}catch(x){}applyLang()};
 paintBeats(-1);upStreak();applyLang();
